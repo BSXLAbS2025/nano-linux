@@ -1,10 +1,15 @@
 <JWM>
     <IconPath>/usr/share/icons</IconPath>
+
     <RootMenu onroot="12">
-        <Program label="Terminal">xterm</Program>
-        <Exit label="Exit"/>
+        <Program icon="term.png" label="Terminal">xterm</Program>
+        <Program icon="net.png" label="Internet">wget</Program>
+        <Program icon="pkg.png" label="Packages">nano-load</Program>
+        <Separator/>
+        <Exit label="Shutdown" icon="off.png"/>
     </RootMenu>
-    <Tray x="0" y="-1" height="28">
+
+    <Tray x="0" y="-1" height="32">
         <TrayButton icon="nano.png">root:12</TrayButton>
         <TaskList/>
         <Clock format="%H:%M"/>
