@@ -9,11 +9,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y build-essential wget cpio python3 unzip rsync bc libncurses-dev
       - name: Build
         run: |
-          git clone --depth 1 https://github.com/buildroot/buildroot.git
+          git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git
           cp nano_defconfig buildroot/configs/nano_defconfig
           cd buildroot
           make nano_defconfig
-          make
+          # Добавляем флаги, которые отключают превращение предупреждений в ошибки
+          make HOSTCFLAGS="-Wno-error=format-security -Wno-format-security"
+          
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
