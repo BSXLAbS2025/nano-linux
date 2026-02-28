@@ -10,6 +10,7 @@ jobs:
       - name: Build
         run: |
           git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git
+          cp -r board buildroot/
           cp nano_defconfig buildroot/configs/nano_defconfig
           cd buildroot
           make nano_defconfig
