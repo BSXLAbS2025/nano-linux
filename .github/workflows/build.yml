@@ -4,25 +4,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Build Tools
+      - uses: actions/checkout@v4
+      - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential wget cpio python3 unzip rsync bc libncurses-dev
-
-      - name: Clone Buildroot
-        run: git clone --depth 1 https://github.com/buildroot/buildroot.git
-
-      - name: Copy Config
-        run: cp nano_defconfig buildroot/configs/nano_defconfig
-
-      - name: Full Build
+      - name: Build
         run: |
+          git clone --depth 1 https://github.com/buildroot/buildroot.git
+          cp nano_defconfig buildroot/configs/nano_defconfig
           cd buildroot
           make nano_defconfig
           make
-
-      - name: Upload Result
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: nano-os-images
