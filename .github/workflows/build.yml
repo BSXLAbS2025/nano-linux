@@ -11,15 +11,35 @@ jobs:
         run: |
           rm -rf buildroot
           git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git
+          cd buildroot
           
-          make -C buildroot defconfig
+          # Создаем базовый конфиг для архитектуры x86_64
+          make x86_64_defconfig
           
-          cp nano_defconfig buildroot/configs/nano_defconfig
+          # Теперь ДОПИСЫВАЕМ только то, что нам нужно, в конец файла
+          # Это гарантирует, что старого мусора внутри не будет
+          {
+            echo "BR2_TOOLCHAIN_BUILDROOT_MUSL=y"
+            echo "BR2_PACKAGE_BUSYBOX=y"
+            echo "BR2_PACKAGE_WAYLAND=y"
+            echo "BR2_PACKAGE_WESTON=y"
+            echo "BR2_PACKAGE_WESTON_DRM=y"
+            echo "BR2_PACKAGE_WESTON_FBDEV=y"
+            echo "BR2_TARGET_ROOTFS_CPIO=y"
+            echo "BR2_TARGET_ROOTFS_CPIO_XZ=y"
+            echo "BR2_LINUX_KERNEL=y"
+            echo "BR2_LINUX_KERNEL_DEFCONFIG=\"x86_64\""
+            echo "BR2_LINUX_KERNEL_USE_DEFCONFIG=y"
+            echo "BR2_TARGET_SYSLINUX=y"
+            echo "BR2_TARGET_SYSLINUX_ISOLINUX=y"
+          } >> .config
           
-          make -C buildroot nano_defconfig
+          # САМОЕ ВАЖНОЕ: Удаляет легаси и подтягивает зависимости
+          make olddefconfig
           
-          make -C buildroot
-          
+          # И только потом собираем
+          make
+      
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
