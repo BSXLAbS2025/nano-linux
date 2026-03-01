@@ -9,36 +9,22 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y build-essential wget cpio python3 unzip rsync bc libncurses-dev libelf-dev libssl-dev bison flex xorriso mtools libisoburn-dev gettext texinfo libwayland-dev libxkbcommon-dev libpixman-1-dev libgbm-dev
       - name: Build
         run: |
-          rm -rf buildroot
+          # 1. Скачиваем Buildroot
           git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git
           cd buildroot
           
-          # Создаем базовый конфиг для архитектуры x86_64
-          make x86_64_defconfig
+          # 2. Используем существующий defconfig, но не копируем его, а "импортируем"
+          # Это заставит Buildroot проверить его на совместимость
+          make defconfig
+          ./support/kconfig/merge_config.sh -m .config ../nano_defconfig
           
-          # Теперь ДОПИСЫВАЕМ только то, что нам нужно, в конец файла
-          # Это гарантирует, что старого мусора внутри не будет
-          {
-            echo "BR2_TOOLCHAIN_BUILDROOT_MUSL=y"
-            echo "BR2_PACKAGE_BUSYBOX=y"
-            echo "BR2_PACKAGE_WAYLAND=y"
-            echo "BR2_PACKAGE_WESTON=y"
-            echo "BR2_PACKAGE_WESTON_DRM=y"
-            echo "BR2_PACKAGE_WESTON_FBDEV=y"
-            echo "BR2_TARGET_ROOTFS_CPIO=y"
-            echo "BR2_TARGET_ROOTFS_CPIO_XZ=y"
-            echo "BR2_LINUX_KERNEL=y"
-            echo "BR2_LINUX_KERNEL_DEFCONFIG=\"x86_64\""
-            echo "BR2_LINUX_KERNEL_USE_DEFCONFIG=y"
-            echo "BR2_TARGET_SYSLINUX=y"
-            echo "BR2_TARGET_SYSLINUX_ISOLINUX=y"
-          } >> .config
-          
-          # САМОЕ ВАЖНОЕ: Удаляет легаси и подтягивает зависимости
+          # 3. ЭТА КОМАНДА — ключ к решению. 
+          # Она берет текущий конфиг, проверяет его на "legacy" и автоматически вычищает мусор
           make olddefconfig
           
-          # И только потом собираем
+          # 4. Собираем
           make
+          
       
       - name: Upload
         uses: actions/upload-artifact@v4
