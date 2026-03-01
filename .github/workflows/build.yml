@@ -13,8 +13,8 @@ jobs:
           cp -r board buildroot/
           cp nano_defconfig buildroot/configs/nano_defconfig
           cd buildroot
+          make distclean
           make nano_defconfig
-          # Добавляем флаги, которые отключают превращение предупреждений в ошибки
           make HOSTCFLAGS="-Wno-error=format-security -Wno-format-security"
           
       - name: Upload
