@@ -1,0 +1,11 @@
+#!/bin/sh
+case "$1" in
+  start)
+    # Запуск Weston в режиме fbdev (фреймбуфер)
+    weston --backend=fbdev-backend.so --tty=/dev/tty1 &
+    ;;
+  stop)
+    killall weston
+    ;;
+esac
+  
