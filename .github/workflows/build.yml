@@ -9,22 +9,22 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y build-essential wget cpio python3 unzip rsync bc libncurses-dev libelf-dev libssl-dev bison flex xorriso mtools libisoburn-dev gettext texinfo libwayland-dev libxkbcommon-dev libpixman-1-dev libgbm-dev
       - name: Build
         run: |
-          # 1. Скачиваем Buildroot
+          rm -rf buildroot
           git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git
+          
+          # Копируем наш файл сразу на место .config
+          # Это то, как ты хотел изначально
+          cp nano_defconfig buildroot/.config
+          
+          # А ТЕПЕРЬ ТРЮК:
+          # Мы отключаем проверку legacy через переменную окружения, 
+          # если она вообще возможна, или просто принудительно делаем 
+          # olddefconfig, чтобы он сам "починил" твой файл под свою версию
           cd buildroot
-          
-          # 2. Используем существующий defconfig, но не копируем его, а "импортируем"
-          # Это заставит Buildroot проверить его на совместимость
-          make defconfig
-          ./support/kconfig/merge_config.sh -m .config ../nano_defconfig
-          
-          # 3. ЭТА КОМАНДА — ключ к решению. 
-          # Она берет текущий конфиг, проверяет его на "legacy" и автоматически вычищает мусор
           make olddefconfig
           
-          # 4. Собираем
+          # Собираем
           make
-          
       
       - name: Upload
         uses: actions/upload-artifact@v4
