@@ -13,16 +13,16 @@ jobs:
           rm -rf buildroot
           git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git
           
-          cd buildroot
-          # Перезаписываем пути в .config перед стартом сборки
-          echo "BR2_ROOTFS_OVERLAY=\"${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay\"" >> .config
-          chmod +x "${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay/etc/init.d/S99weston"
+          rm -f build.log
           
-          # Запуск сборки
-          make olddefconfig
-          set -o pipefail
-          make 2>&1 | tee build.log
-        continue-on-error: true # Чтобы следующий блок выполнился, даже если make упадет
+          # set -e: останавливает скрипт при первой же ошибке
+          # set -x: выводит все команды перед их выполнением (увидишь, где именно затык)
+          set -ex
+          
+          echo "BR2_ROOTFS_OVERLAY=\"${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay\"" >> .config
+          
+          # Собираем с дебагом
+          make V=1 2>&1 | tee build.log
 
       - name: Diagnostic Output
         if: steps.build_step.outcome != 'success'
