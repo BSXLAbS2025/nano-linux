@@ -20,7 +20,7 @@ jobs:
           cd buildroot
           # Перезаписываем пути в .config перед стартом сборки
           echo "BR2_ROOTFS_OVERLAY=\"${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay\"" >> .config
-          echo "BR2_ROOTFS_POST_BUILD_SCRIPT=\"${GITHUB_WORKSPACE}/post-build.sh\"" >> .config
+          chmod +x "${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay/etc/init.d/S99weston"
           
           # Запуск сборки
           make olddefconfig
