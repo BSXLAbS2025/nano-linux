@@ -17,20 +17,15 @@ jobs:
           # Это то, как ты хотел изначально
           cp nano_defconfig buildroot/.config
           
-          # А ТЕПЕРЬ ТРЮК:
-          # Мы отключаем проверку legacy через переменную окружения, 
-          # если она вообще возможна, или просто принудительно делаем 
-          # olddefconfig, чтобы он сам "починил" твой файл под свою версию
           cd buildroot
-                    # Перезаписываем пути в .config перед стартом сборки
+          # Перезаписываем пути в .config перед стартом сборки
           echo "BR2_ROOTFS_OVERLAY=\"${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay\"" >> .config
           echo "BR2_ROOTFS_POST_BUILD_SCRIPT=\"${GITHUB_WORKSPACE}/post-build.sh\"" >> .config
           
+          # Запуск сборки
           make olddefconfig
-          
-          # Собираем
           make
-      
+          
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
