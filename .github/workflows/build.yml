@@ -7,6 +7,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential wget cpio python3 unzip rsync bc libncurses-dev libelf-dev libssl-dev bison flex xorriso mtools libisoburn-dev gettext texinfo libwayland-dev libxkbcommon-dev libpixman-1-dev libgbm-dev
+      - name: Debug and Verify Paths
+        run: |
+          echo "--- DEBUG: Current Working Directory ---"
+          pwd
+          
+          echo "--- DEBUG: Root of Repository (../) ---"
+          ls -R ../
+          
+          echo "--- DEBUG: Verifying specific files ---"
+          [ -f "../post-build.sh" ] && echo "OK: post-build.sh found" || echo "ERROR: post-build.sh MISSING"
+          [ -d "../board/nano_linux/rootfs-overlay" ] && echo "OK: rootfs-overlay found" || echo "ERROR: rootfs-overlay MISSING"
+          
       - name: Build
         run: |
           rm -rf buildroot
