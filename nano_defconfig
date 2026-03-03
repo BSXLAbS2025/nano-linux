@@ -23,5 +23,4 @@ BR2_LINUX_KERNEL_DEFCONFIG="x86_64"
 BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="$(TOPDIR)/../tiny.config"
 
 BR2_ROOTFS_OVERLAY="$(TOPDIR)/../board/nano_linux/rootfs-overlay"
-BR2_ROOTFS_POST_BUILD_SCRIPT="$(TOPDIR)/../post-build.sh"
 
