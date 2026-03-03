@@ -10,31 +10,15 @@ jobs:
         
       - name: Build
         run: |
-          rm -rf buildroot
-          git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git
+          git clone --depth 1 --branch 2025.02 https://github.com/buildroot/buildroot.git
           
-          rm -f build.log
-          
-          # set -e: останавливает скрипт при первой же ошибке
-          # set -x: выводит все команды перед их выполнением (увидишь, где именно затык)
-          set -ex
-          
+          cd buildroot
+          # Просто дописываем пути в уже готовый .config
           echo "BR2_ROOTFS_OVERLAY=\"${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay\"" >> .config
           
-          # Собираем с дебагом
-          make V=1 2>&1 | tee build.log
-
-      - name: Diagnostic Output
-        if: steps.build_step.outcome != 'success'
-        run: |
-          echo "--- БИЛД УПАЛ! Вывод последних 100 строк ---"
-          tail -n 100 buildroot/build.log
-          
-          echo "--- ПРОВЕРКА МЕСТА НА ДИСКЕ ---"
-          df -h
-          
-          echo "--- ПРОВЕРКА ПАМЯТИ ---"
-          free -m
+          # Запускаем билд без лишних флагов
+          make olddefconfig
+          make
           
       - name: Upload
         uses: actions/upload-artifact@v4
