@@ -13,10 +13,6 @@ jobs:
           rm -rf buildroot
           git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git
           
-          # Копируем наш файл сразу на место .config
-          # Это то, как ты хотел изначально
-          cp nano_defconfig buildroot/.config
-          
           cd buildroot
           # Перезаписываем пути в .config перед стартом сборки
           echo "BR2_ROOTFS_OVERLAY=\"${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay\"" >> .config
@@ -24,7 +20,21 @@ jobs:
           
           # Запуск сборки
           make olddefconfig
-          make
+          set -o pipefail
+          make 2>&1 | tee build.log
+        continue-on-error: true # Чтобы следующий блок выполнился, даже если make упадет
+
+      - name: Diagnostic Output
+        if: steps.build_step.outcome != 'success'
+        run: |
+          echo "--- БИЛД УПАЛ! Вывод последних 100 строк ---"
+          tail -n 100 buildroot/build.log
+          
+          echo "--- ПРОВЕРКА МЕСТА НА ДИСКЕ ---"
+          df -h
+          
+          echo "--- ПРОВЕРКА ПАМЯТИ ---"
+          free -m
           
       - name: Upload
         uses: actions/upload-artifact@v4
