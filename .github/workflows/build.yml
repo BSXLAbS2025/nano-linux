@@ -11,7 +11,7 @@ jobs:
       - name: Build
         run: |
           cd buildroot
-          git clone --depth 1 --branch 2025.02 https://github.com/buildroot/buildroot.git .
+          git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git .
           cp ../nano_defconfig configs/nano_defconfig
           
           # 1. Применяем конфиг
