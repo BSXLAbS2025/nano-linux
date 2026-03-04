@@ -6,22 +6,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y build-essential wget cpio python3 unzip rsync bc libncurses-dev libelf-dev libssl-dev bison flex xorriso mtools libisoburn-dev gettext texinfo libwayland-dev libxkbcommon-dev libpixman-1-dev libgbm-dev
+        run: sudo apt-get update && sudo apt-get install -y build-essential wget cpio python3 unzip rsync bc libncurses-dev libelf-dev libssl-dev bison flex xorriso mtools libisoburn-dev genisoimage mtools gettext texinfo libwayland-dev libxkbcommon-dev libpixman-1-dev libgbm-dev
         
       - name: Build
         run: |
-          git clone --depth 1 --branch 2025.02 https://github.com/buildroot/buildroot.git
-          
           cd buildroot
-          # Просто дописываем пути в уже готовый .config
-          echo "BR2_ROOTFS_OVERLAY=\"${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay\"" >> .config
+          git clone --depth 1 --branch 2025.02 https://github.com/buildroot/buildroot.git .
+          cp ../nano_defconfig configs/nano_defconfig
           
-          # Запускаем билд без лишних флагов
+          # 1. Применяем конфиг
+          make nano_defconfig
+          
+          # 2. ПРИНУДИТЕЛЬНО ВКЛЮЧАЕМ нужные нам форматы образов прямо в .config
+          # (Это работает надежнее, чем echo до make)
+          sed -i 's/.*BR2_TARGET_ROOTFS_ISO9660.*/BR2_TARGET_ROOTFS_ISO9660=y/' .config
+          sed -i 's/.*BR2_TARGET_ROOTFS_EXT2.*/BR2_TARGET_ROOTFS_EXT2=y/' .config
+          
+          # 3. Важно: пересобираем конфиг с новыми настройками
           make olddefconfig
+          
+          # 4. Проверка (чтобы увидеть в логах, включились ли они)
+          echo "Checking config..."
+          grep "BR2_TARGET_ROOTFS_ISO9660" .config
+          
+          # 5. Сборка
           make
           
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: nano-os-images
+          name: nano-os
           path: buildroot/output/images/*
