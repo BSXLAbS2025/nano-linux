@@ -10,29 +10,27 @@ jobs:
         
       - name: Build
         run: |
-          git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git
+          git clone --depth 1 --branch 2026.02 https://github.com/buildroot/buildroot.git
           
-          echo "--- ГДЕ МЫ СЕЙЧАС? ---"
-          pwd
-          echo "--- ЧТО В ЭТОЙ ПАПКЕ? ---"
-          ls -F
-         
-          # Находим папку с buildroot (ищем любую папку, которая содержит Makefile)
-          BUILDROOT_DIR=$(find . -maxdepth 2 -name "Makefile" -exec dirname {} \;)
+          cd buildroot
           
-          if [ -z "$BUILDROOT_DIR" ]; then
-            echo "КАТАСТРОФА: Buildroot не найден!"
-            exit 1
-          fi
-          
-          echo "Buildroot найден в: $BUILDROOT_DIR"
-          cd "$BUILDROOT_DIR"
-          
-          # Продолжаем сборку в найденной папке
+          # 1. Применяем твой конфиг
           cp ../nano_defconfig configs/nano_defconfig
           make nano_defconfig
+          
+          # 2. СИЛОВОЕ ВКЛЮЧЕНИЕ ОБРАЗОВ (заменяем если есть, добавляем если нет)
+          sed -i 's/.*BR2_TARGET_ROOTFS_CPIO.*/BR2_TARGET_ROOTFS_CPIO=y/' .config
+          sed -i 's/.*BR2_TARGET_ROOTFS_ISO9660.*/BR2_TARGET_ROOTFS_ISO9660=y/' .config
+          
+          # 3. Инжектим оверлей и фиксим права
+          sed -i 's|.*BR2_ROOTFS_OVERLAY.*|BR2_ROOTFS_OVERLAY="'${GITHUB_WORKSPACE}'/board/nano_linux/rootfs-overlay"|' .config
+          chmod +x "${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay/etc/init.d/S99weston"
+          
+          # 4. Обновляем зависимости конфига
+          make olddefconfig
+          
+          # 5. Сборка
           make
-
  
       - name: Upload
         uses: actions/upload-artifact@v4
