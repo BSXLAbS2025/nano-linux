@@ -10,28 +10,30 @@ jobs:
         
       - name: Build
         run: |
-          cd buildroot
-          git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git .
+          git clone --depth 1 --branch 2024.02 https://github.com/buildroot/buildroot.git
+          
+          echo "--- ГДЕ МЫ СЕЙЧАС? ---"
+          pwd
+          echo "--- ЧТО В ЭТОЙ ПАПКЕ? ---"
+          ls -F
+         
+          # Находим папку с buildroot (ищем любую папку, которая содержит Makefile)
+          BUILDROOT_DIR=$(find . -maxdepth 2 -name "Makefile" -exec dirname {} \;)
+          
+          if [ -z "$BUILDROOT_DIR" ]; then
+            echo "КАТАСТРОФА: Buildroot не найден!"
+            exit 1
+          fi
+          
+          echo "Buildroot найден в: $BUILDROOT_DIR"
+          cd "$BUILDROOT_DIR"
+          
+          # Продолжаем сборку в найденной папке
           cp ../nano_defconfig configs/nano_defconfig
-          
-          # 1. Применяем конфиг
           make nano_defconfig
-          
-          # 2. ПРИНУДИТЕЛЬНО ВКЛЮЧАЕМ нужные нам форматы образов прямо в .config
-          # (Это работает надежнее, чем echo до make)
-          sed -i 's/.*BR2_TARGET_ROOTFS_ISO9660.*/BR2_TARGET_ROOTFS_ISO9660=y/' .config
-          sed -i 's/.*BR2_TARGET_ROOTFS_EXT2.*/BR2_TARGET_ROOTFS_EXT2=y/' .config
-          
-          # 3. Важно: пересобираем конфиг с новыми настройками
-          make olddefconfig
-          
-          # 4. Проверка (чтобы увидеть в логах, включились ли они)
-          echo "Checking config..."
-          grep "BR2_TARGET_ROOTFS_ISO9660" .config
-          
-          # 5. Сборка
           make
-          
+
+ 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
