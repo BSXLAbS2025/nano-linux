@@ -24,7 +24,7 @@ jobs:
           
           # 3. Инжектим оверлей и фиксим права
           sed -i 's|.*BR2_ROOTFS_OVERLAY.*|BR2_ROOTFS_OVERLAY="'${GITHUB_WORKSPACE}'/board/nano_linux/rootfs-overlay"|' .config
-          chmod +x "${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay/etc/init.d/S99weston"
+          chmod +x "${GITHUB_WORKSPACE}/board/nano_linux/rootfs-overlay/usr/bin/status-bar.sh"
           
           # 4. Обновляем зависимости конфига
           make olddefconfig
